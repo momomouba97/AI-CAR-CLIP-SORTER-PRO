@@ -1,0 +1,74 @@
+name: build-macos
+
+on:
+  workflow_dispatch:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: macos-15-intel
+    timeout-minutes: 60
+    env:
+      MACOSX_DEPLOYMENT_TARGET: "11.0"
+      PYTHON_VERSION: "3.11.9"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Confirm Intel runner
+        run: |
+          uname -m
+          sw_vers
+          test "$(uname -m)" = "x86_64"
+
+      - name: Install Python ${{ env.PYTHON_VERSION }} (python.org)
+        run: |
+          curl -fsSL -o /tmp/python.pkg \
+            "https://www.python.org/ftp/python/${PYTHON_VERSION}/python-${PYTHON_VERSION}-macos11.pkg"
+          sudo installer -pkg /tmp/python.pkg -target /
+          /Library/Frameworks/Python.framework/Versions/3.11/bin/python3.11 --version
+
+      - name: Create virtualenv and install dependencies
+        run: |
+          /Library/Frameworks/Python.framework/Versions/3.11/bin/python3.11 -m venv .venv
+          source .venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+          pip list
+
+      - name: Run tests
+        run: |
+          source .venv/bin/activate
+          QT_QPA_PLATFORM=offscreen python -m pytest -q
+
+      - name: Fetch static FFmpeg/FFprobe (x86_64) and verify minimum macOS
+        run: bash scripts/fetch_ffmpeg.sh
+
+      - name: Build .app
+        run: |
+          source .venv/bin/activate
+          bash scripts/build_mac.sh
+
+      - name: Smoke-test the built app (frozen bundle)
+        run: |
+          "dist/YouTube Downloader Studio.app/Contents/MacOS/YouTubeDownloaderStudio" --selftest --require-ffmpeg
+
+      - name: Create DMG
+        run: bash scripts/create_dmg.sh
+
+      - name: Upload DMG as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: YouTube-Downloader-Studio-dmg
+          path: dist/YouTube-Downloader-Studio.dmg
+          if-no-files-found: error
+
+      - name: Attach DMG to the Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/YouTube-Downloader-Studio.dmg
