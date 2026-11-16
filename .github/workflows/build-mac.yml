@@ -1,0 +1,66 @@
+name: Build macOS app
+
+on:
+  workflow_dispatch: {}
+  push:
+    tags: ["v*"]
+
+jobs:
+  build:
+    runs-on: macos-15-intel
+    env:
+      MACOSX_DEPLOYMENT_TARGET: "11.0"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller
+
+      - name: Download deno (Intel)
+        run: |
+          curl -fsSL -o deno.zip "https://github.com/denoland/deno/releases/latest/download/deno-x86_64-apple-darwin.zip"
+          unzip -o deno.zip
+          chmod +x deno
+          ./deno --version
+
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller app.py \
+            --name YouTubeStudio \
+            --noconfirm --clean \
+            --collect-all gradio \
+            --collect-all gradio_client \
+            --collect-all safehttpx \
+            --collect-all groovy \
+            --collect-all imageio_ffmpeg \
+            --collect-all yt_dlp_ejs \
+            --collect-submodules yt_dlp \
+            --copy-metadata gradio --copy-metadata gradio_client \
+            --copy-metadata yt-dlp --copy-metadata imageio-ffmpeg \
+            --add-binary "deno:."
+
+      - name: Add launcher
+        run: |
+          cat > "dist/YouTubeStudio/Start YouTube Studio.command" <<'EOF'
+          #!/bin/bash
+          cd "$(dirname "$0")"
+          xattr -cr . 2>/dev/null
+          chmod +x ./YouTubeStudio
+          ./YouTubeStudio
+          EOF
+          chmod +x "dist/YouTubeStudio/Start YouTube Studio.command"
+
+      - name: Zip
+        run: ditto -c -k --keepParent dist/YouTubeStudio YouTubeStudio-mac-intel.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: YouTubeStudio-mac-intel
+          path: YouTubeStudio-mac-intel.zip
+          retention-days: 30
