@@ -1,0 +1,16 @@
+YouTube Downloader Studio – Installation / التثبيت
+====================================================
+
+1. Drag "YouTube Downloader Studio" onto the "Applications" folder.
+   اسحب التطبيق إلى مجلد Applications.
+
+2. First launch (the app is not notarized by Apple):
+   Right-click (or Control-click) the app in Applications -> Open -> Open.
+   If macOS still blocks it: System Preferences -> Security & Privacy -> General -> "Open Anyway".
+   Or in Terminal:  xattr -dr com.apple.quarantine "/Applications/YouTube Downloader Studio.app"
+
+   أول تشغيل: انقر بزر الماوس الأيمن على التطبيق ثم Open ثم Open.
+   إن بقي محجوباً: تفضيلات النظام ← الأمان والخصوصية ← "Open Anyway".
+
+Requires macOS 11.0 or later, Intel Mac.
+Use only for content you own or are allowed to download.
