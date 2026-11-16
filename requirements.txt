@@ -1,0 +1,6 @@
+# Target: macOS 11.7 (Big Sur), Intel x86_64, Python 3.11 (PySide6 6.5.3 supports Python <= 3.11)
+# PySide6 6.5.3 LTS: x86_64 Qt binaries verified minos 11.0 (QtCore, libqcocoa).
+PySide6_Essentials==6.5.3
+# [default] adds certifi etc. (python.org Python ships without a CA bundle)
+yt-dlp[default]==2026.10.26
+certifi
