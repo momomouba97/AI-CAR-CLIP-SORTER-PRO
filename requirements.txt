@@ -1,0 +1,6 @@
+# Target: macOS 11.7 (Big Sur), Intel x86_64, Python 3.11
+# PySide6 6.5.3 LTS: x86_64 Mach-O binaries verified minos 11.0 (QtCore, libqcocoa).
+PySide6==6.5.3
+yt-dlp==2026.10.26
+# dev / test
+pytest==8.3.3
