@@ -1,3 +1,0 @@
-gradio>=5.9,<6
-yt-dlp[default]
-imageio-ffmpeg
